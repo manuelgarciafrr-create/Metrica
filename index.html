@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio · Métrica</title>
+
+  <!-- Tailwind CSS vía CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Space Grotesk (display) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <script>
+    // ── Tailwind config ──────────────────────────────────────────────────────
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            void:   '#070A08',   // fondo absoluto
+            surface:'#0E1410',   // tarjetas / paneles
+            edge:   '#1A2620',   // bordes sutiles
+            ghost:  '#243630',   // hover overlay
+            neon:   '#1F8B5C',   // acento primario (verde oscuro Métrica)
+            neonlo: '#1C3D2E',   // variante baja saturación
+            mist:   '#8FA89C',   // texto secundario
+            snow:   '#EAF2EC',   // texto principal
+          },
+          keyframes: {
+            fadeUp: { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+            glow:   { '0%,100%': { boxShadow: '0 0 8px #1F8B5C44' }, '50%': { boxShadow: '0 0 24px #1F8B5C99' } },
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.55s ease both',
+            glow: 'glow 2.5s ease infinite',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Base ──────────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #070A08;
+      color: #EAF2EC;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise overlay ─────────────────────────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      background-size: 200px;
+      opacity: 0.5;
+    }
+
+    /* ── Logo click counter visual feedback ─────────────────────────────────── */
+    #logo { cursor: pointer; user-select: none; }
+    #logo.pulsed { animation: logoPulse 0.18s ease; }
+    @keyframes logoPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+
+    /* ── Neon border cards ──────────────────────────────────────────────────── */
+    .project-card {
+      position: relative;
+      background: #0E1410;
+      border: 1px solid #1A2620;
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .project-card:hover {
+      transform: translateY(-6px);
+      border-color: #1F8B5C55;
+      box-shadow: 0 0 32px #1F8B5C22;
+    }
+    .project-card img { transition: transform 0.4s ease; }
+    .project-card:hover img { transform: scale(1.04); }
+
+    /* ── Section transition ─────────────────────────────────────────────────── */
+    #section-index, #section-admin {
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    /* Cualquier elemento con .hidden-section queda oculto */
+    .hidden-section { display: none !important; }
+
+    /* ── Form inputs ────────────────────────────────────────────────────────── */
+    .field {
+      background: #0E1410;
+      border: 1px solid #1A2620;
+      color: #EAF2EC;
+      border-radius: 10px;
+      padding: 12px 16px;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+    .field:focus {
+      border-color: #1F8B5C;
+      box-shadow: 0 0 0 3px #1F8B5C22;
+    }
+    .field::placeholder { color: #243630; }
+
+    /* ── Badge/Tag ──────────────────────────────────────────────────────────── */
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: #243630;
+      color: #1F8B5C;
+      border: 1px solid #1C3D2E;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ── Table ──────────────────────────────────────────────────────────────── */
+    .admin-table th {
+      background: #1A2620;
+      color: #8FA89C;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 12px 16px;
+      text-align: left;
+    }
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #1A2620;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: #0E1410; }
+
+    /* ── Status select ──────────────────────────────────────────────────────── */
+    .status-select {
+      background: #1A2620;
+      border: 1px solid #243630;
+      color: #EAF2EC;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .status-select:focus { border-color: #1F8B5C; }
+
+    /* ── Modal overlay ──────────────────────────────────────────────────────── */
+    #login-modal {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: opacity 0.3s ease;
+    }
+
+    /* ── Scrollbar ──────────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #070A08; }
+    ::-webkit-scrollbar-thumb { background: #243630; border-radius: 3px; }
+
+    /* ── Toast ──────────────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      padding: 12px 20px;
+      background: #0E1410;
+      border: 1px solid #1F8B5C55;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      color: #EAF2EC;
+      box-shadow: 0 8px 32px #00000088;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ── Hero gradient text ─────────────────────────────────────────────────── */
+    .gradient-text {
+      background: linear-gradient(120deg, #fff 40%, #1F8B5C);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Glowing neon button ────────────────────────────────────────────────── */
+    .btn-neon {
+      background: #1F8B5C;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    }
+    .btn-neon:hover {
+      background: #2FAE76;
+      box-shadow: 0 0 24px #1F8B5C66;
+      transform: translateY(-2px);
+    }
+    .btn-neon:active { transform: translateY(0); }
+
+    .btn-ghost {
+      background: transparent;
+      color: #8FA89C;
+      border: 1px solid #1A2620;
+      border-radius: 10px;
+      padding: 11px 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: #1F8B5C55; color: #EAF2EC; }
+
+    /* admin section animations */
+    .stagger-child { animation: fadeUp 0.5s ease both; }
+    .stagger-child:nth-child(1) { animation-delay: 0.05s; }
+    .stagger-child:nth-child(2) { animation-delay: 0.12s; }
+    .stagger-child:nth-child(3) { animation-delay: 0.19s; }
+  </style>
+</head>
+<body class="relative">
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SECCIÓN PÚBLICA — INDEX
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="section-index">
+
+  <!-- HEADER ───────────────────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-50 border-b border-edge" style="background: rgba(10,10,15,0.82); backdrop-filter: blur(16px);">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+
+      <!-- Logo — 5 clics ocultos activan el panel admin -->
+      <!-- ⚠ PARA PONER TU LOGO: sube tu archivo de imagen como "logo.png" en la
+           misma carpeta que este index.html, y cambia abajo el atributo src
+           de "logo.png" si tu archivo se llama distinto (ej: logo.svg, logo.jpg).
+           Si la imagen no se encuentra, se muestra automáticamente el ícono
+           de respaldo (el rombo verde) para que el sitio nunca se vea roto. -->
+      <div id="logo" class="flex items-center gap-2 group">
+        <img
+          src="logo.png"
+          alt="Métrica"
+          class="w-7 h-7 object-contain"
+          onerror="this.style.display='none'; document.getElementById('logo-fallback-icon').style.display='block';"
+        />
+        <svg id="logo-fallback-icon" style="display:none;" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="28" rx="8" fill="#1F8B5C" opacity="0.15"/>
+          <path d="M7 14L14 7L21 14L14 21L7 14Z" stroke="#1F8B5C" stroke-width="1.8" fill="none"/>
+          <circle cx="14" cy="14" r="2.5" fill="#1F8B5C"/>
+        </svg>
+        <span class="font-display font-700 text-lg tracking-tight text-snow group-hover:text-neon transition-colors duration-200">
+          Métrica
+        </span>
+      </div>
+
+      <!-- Nav -->
+      <nav class="flex items-center gap-6">
+        <a href="#proyectos" class="text-mist hover:text-snow text-sm transition-colors duration-200">Proyectos</a>
+        <a href="#contacto" class="text-mist hover:text-snow text-sm transition-colors duration-200">Contacto</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO ─────────────────────────────────────────────────────────────────── -->
+  <section class="max-w-6xl mx-auto px-6 pt-24 pb-20 relative z-10">
+    <div class="max-w-2xl animate-fade-up">
+      <p class="text-mist text-sm font-display tracking-widest uppercase mb-4">Desarrollo Web · Diseño Digital</p>
+      <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight mb-6">
+        <span class="gradient-text">Proyectos que</span><br/>
+        hablan por sí solos.
+      </h1>
+      <p class="text-mist text-lg leading-relaxed mb-10">
+        Construimos experiencias digitales con identidad propia. Desde landing pages hasta aplicaciones complejas, cada pixel tiene intención.
+      </p>
+      <a href="#proyectos" class="btn-neon inline-block">Ver portafolio →</a>
+    </div>
+
+    <!-- decorative blobs -->
+    <div style="position:absolute;top:-60px;right:-80px;width:420px;height:420px;background:radial-gradient(circle,#1F8B5C18 0%,transparent 70%);pointer-events:none;z-index:-1;"></div>
+  </section>
+
+  <!-- PORTAFOLIO ───────────────────────────────────────────────────────────── -->
+  <section id="proyectos" class="max-w-6xl mx-auto px-6 pb-24 relative z-10">
+    <div class="flex items-end justify-between mb-12">
+      <div>
+        <p class="text-neon text-xs font-display tracking-widest uppercase mb-2">Work</p>
+        <h2 class="font-display text-3xl font-bold text-snow">Proyectos recientes</h2>
+      </div>
+      <span id="project-count" class="text-mist text-sm"></span>
+    </div>
+
+    <!-- Estado de carga / error -->
+    <div id="projects-state" class="text-center py-20 text-mist text-sm hidden">
+      <div id="projects-loading">
+        <div class="inline-block w-8 h-8 border-2 border-neon border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p>Cargando proyectos…</p>
+      </div>
+      <p id="projects-error" class="hidden text-red-400"></p>
+    </div>
+
+    <!-- Grid de tarjetas -->
+    <div id="projects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- FORMULARIO DE CONTACTO ───────────────────────────────────────────────── -->
+  <section id="contacto" class="border-t border-edge relative z-10">
+    <div class="max-w-3xl mx-auto px-6 py-24">
+      <div class="text-center mb-12">
+        <p class="text-neon text-xs font-display tracking-widest uppercase mb-2">Hablemos</p>
+        <h2 class="font-display text-3xl font-bold text-snow mb-3">Quiero mi página web</h2>
+        <p class="text-mist">Cuéntame qué necesitas y me pongo en contacto contigo.</p>
+      </div>
+
+      <div class="bg-surface border border-edge rounded-2xl p-8 md:p-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+          <div>
+            <label class="block text-snow text-sm font-500 mb-2">Nombre</label>
+            <input id="contact-name" type="text" placeholder="Tu nombre" class="field" />
+          </div>
+          <div>
+            <label class="block text-snow text-sm font-500 mb-2">Correo electrónico</label>
+            <input id="contact-email" type="email" placeholder="tu@correo.com" class="field" />
+          </div>
+        </div>
+        <div class="mb-6">
+          <label class="block text-snow text-sm font-500 mb-2">¿Qué tipo de página necesitas?</label>
+          <textarea id="contact-message" rows="4" placeholder="Ej: una landing page para mi negocio de ropa, con carrito de compras…" class="field resize-none"></textarea>
+        </div>
+        <div class="flex items-center justify-between gap-4">
+          <p class="text-mist text-xs">Respondo en menos de 24 h.</p>
+          <button onclick="submitContact()" class="btn-neon">Enviar mensaje</button>
+        </div>
+        <p id="contact-feedback" class="mt-4 text-sm hidden"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER ──────────────────────────────────────────────────────────────── -->
+  <footer class="border-t border-edge py-8 relative z-10">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span class="font-display text-snow font-700">Métrica</span>
+      <p class="text-mist text-sm">© 2025 · Todos los derechos reservados</p>
+    </div>
+  </footer>
+</div><!-- /section-index -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MODAL DE LOGIN SECRETO
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="login-modal" class="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center hidden-section">
+  <div class="bg-surface border border-edge rounded-2xl p-8 w-full max-w-sm mx-4 animate-fade-up shadow-2xl">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-9 h-9 rounded-full bg-neonlo flex items-center justify-center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F8B5C" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="font-display font-700 text-snow text-lg leading-none">Acceso privado</h3>
+        <p class="text-mist text-xs mt-0.5">Panel de administración</p>
+      </div>
+    </div>
+
+    <label class="block text-snow text-sm font-500 mb-2">Contraseña</label>
+    <input
+      id="login-password"
+      type="password"
+      placeholder="••••••••"
+      class="field mb-2"
+      onkeydown="if(event.key==='Enter')verifyPassword()"
+    />
+    <p id="login-error" class="text-red-400 text-xs mb-4 hidden">Contraseña incorrecta. Inténtalo de nuevo.</p>
+
+    <div class="flex gap-3">
+      <button onclick="verifyPassword()" class="btn-neon flex-1">Entrar</button>
+      <button onclick="closeLoginModal()" class="btn-ghost">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SECCIÓN ADMIN — DASHBOARD (solo visible post-auth)
+════════════════════════════════════════════════════════════════════════════ -->
+<div id="section-admin" class="hidden-section min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="border-b border-edge sticky top-0 z-50" style="background: rgba(10,10,15,0.9); backdrop-filter: blur(16px);">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="font-display font-700 text-snow">Métrica</span>
+        <span class="bg-neonlo text-neon text-xs font-display font-700 px-2 py-0.5 rounded-md border border-neon/20">ADMIN</span>
+      </div>
+      <button onclick="logout()" class="btn-ghost text-sm py-2 px-4">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- STATS RÁPIDAS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+      <div class="stagger-child bg-surface border border-edge rounded-2xl p-6">
+        <p class="text-mist text-xs uppercase tracking-widest mb-1">Proyectos</p>
+        <p class="font-display text-4xl font-bold text-snow" id="stat-projects">—</p>
+      </div>
+      <div class="stagger-child bg-surface border border-edge rounded-2xl p-6">
+        <p class="text-mist text-xs uppercase tracking-widest mb-1">Leads totales</p>
+        <p class="font-display text-4xl font-bold text-snow" id="stat-leads">—</p>
+      </div>
+      <div class="stagger-child bg-surface border border-edge rounded-2xl p-6">
+        <p class="text-mist text-xs uppercase tracking-widest mb-1">Pendientes</p>
+        <p class="font-display text-4xl font-bold text-neon" id="stat-pending">—</p>
+      </div>
+    </div>
+
+    <!-- AGREGAR PROYECTO ─────────────────────────────────────────────────── -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display text-xl font-bold text-snow">Agregar proyecto</h2>
+        <button onclick="toggleAddForm()" id="add-toggle-btn" class="btn-ghost text-sm py-2">+ Nuevo proyecto</button>
+      </div>
+
+      <div id="add-project-form" class="hidden bg-surface border border-edge rounded-2xl p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+          <div>
+            <label class="block text-snow text-sm font-500 mb-2">Nombre del proyecto</label>
+            <input id="new-name" type="text" placeholder="Mi Proyecto Genial" class="field" />
+          </div>
+          <div>
+            <label class="block text-snow text-sm font-500 mb-2">URL del proyecto</label>
+            <input id="new-url" type="url" placeholder="https://..." class="field" />
+          </div>
+        </div>
+        <div class="mb-5">
+          <label class="block text-snow text-sm font-500 mb-2">Descripción</label>
+          <textarea id="new-desc" rows="3" placeholder="Descripción breve del proyecto…" class="field resize-none"></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+          <div>
+            <label class="block text-snow text-sm font-500 mb-2">Etiquetas <span class="text-mist text-xs">(separadas por coma)</span></label>
+            <input id="new-tags" type="text" placeholder="React, Tailwind, Firebase" class="field" />
+          </div>
+          <div>
+            <label class="block text-snow text-sm font-500 mb-2">URL de imagen</label>
+            <input id="new-image" type="url" placeholder="https://imagen.com/foto.jpg" class="field" />
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="submitNewProject()" class="btn-neon">Publicar proyecto</button>
+          <button onclick="toggleAddForm()" class="btn-ghost">Cancelar</button>
+          <p class="text-mist text-xs ml-2">
+            <!-- ⚠ ENDPOINT: Conecta submitNewProject() al Google Apps Script
+                 de la Hoja 1 (proyectos). Actualmente hace un fetch() POST
+                 a la variable APPS_SCRIPT_URL_PROJECTS. -->
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLA DE LEADS ───────────────────────────────────────────────────── -->
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-display text-xl font-bold text-snow">Gestión de clientes</h2>
+        <button onclick="loadLeads()" class="btn-ghost text-sm py-2">↻ Actualizar</button>
+      </div>
+
+      <div id="leads-state" class="text-center py-16 text-mist text-sm">
+        <div class="inline-block w-7 h-7 border-2 border-neon border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p>Cargando leads…</p>
+      </div>
+
+      <div class="bg-surface border border-edge rounded-2xl overflow-hidden hidden" id="leads-wrapper">
+        <div class="overflow-x-auto">
+          <table class="admin-table w-full">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Mensaje</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <p id="leads-error" class="text-red-400 text-sm text-center py-8 hidden"></p>
+    </section>
+
+  </div>
+</div><!-- /section-admin -->
+
+
+<!-- TOAST ──────────────────────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT PRINCIPAL
+════════════════════════════════════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONFIGURACIÓN — cambia estos valores para conectar tus scripts
+───────────────────────────────────────────────────────────────────────────── */
+
+// Google Sheets publicadas como CSV
+// ──────────────────────────────────────────────────────────────────────────────
+// Hoja 1 — proyectos del portafolio
+// Columnas esperadas (fila 1 = encabezados): nombre | url | descripcion | etiquetas | imagen
+const SHEET_PROJECTS_CSV =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdaW_gPChZIYUwiCAcAo0bjfTW0nbgE8aOUG1Mg1eOxYpY5TvDmFpCxq-B_Ou37QRt0mLT24wAEND8/pub?output=csv&gid=0';
+
+// Hoja 2 — leads / contactos
+// Columnas esperadas: nombre | correo | mensaje | fecha | estado
+const SHEET_LEADS_CSV =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdaW_gPChZIYUwiCAcAo0bjfTW0nbgE8aOUG1Mg1eOxYpY5TvDmFpCxq-B_Ou37QRt0mLT24wAEND8/pub?output=csv&gid=1047825559';
+
+// Google Apps Script Web App URLs
+// ──────────────────────────────────────────────────────────────────────────────
+// ENDPOINT 1 — Recibe formulario de contacto y escribe en Hoja 2
+// Reemplaza con la URL real de tu Web App publicada.
+const APPS_SCRIPT_URL_CONTACT = 'https://script.google.com/macros/s/AKfycbylTwIfKWndSvYMW8An72AHLDGWjzwSvKpIAJH3HmUvY2vtuFRRR5glZx-d1_vN59Bjlw/exec';
+
+// ENDPOINT 2 — Recibe datos de nuevo proyecto y escribe en Hoja 1
+// Reemplaza con la URL real de tu Web App publicada.
+const APPS_SCRIPT_URL_PROJECTS = 'https://script.google.com/macros/s/AKfycbylTwIfKWndSvYMW8An72AHLDGWjzwSvKpIAJH3HmUvY2vtuFRRR5glZx-d1_vN59Bjlw/exec';
+
+// ENDPOINT 3 — Actualiza estado de un lead por número de fila
+// Reemplaza con la URL real de tu Web App publicada.
+const APPS_SCRIPT_URL_STATUS = 'https://script.google.com/macros/s/AKfycbylTwIfKWndSvYMW8An72AHLDGWjzwSvKpIAJH3HmUvY2vtuFRRR5glZx-d1_vN59Bjlw/exec';
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   HASH SHA-256 DE LA CONTRASEÑA
+   La contraseña "1234" se almacena como su hash SHA-256.
+   NUNCA guardes la contraseña en texto plano en el código.
+   Para cambiarla: calcula el SHA-256 de la nueva contraseña y actualiza
+   PASSWORD_HASH. Puedes usar: https://emn178.github.io/online-tools/sha256.html
+   SHA-256("1234") = 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
+───────────────────────────────────────────────────────────────────────────── */
+const PASSWORD_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILIDAD: Calcula SHA-256 usando Web Crypto API (nativa del navegador, sin libs)
+───────────────────────────────────────────────────────────────────────────── */
+async function sha256(message) {
+  const msgBuffer   = new TextEncoder().encode(message);
+  const hashBuffer  = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray   = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILIDAD: Parser de CSV robusto
+   Maneja campos entre comillas, comas dentro de campos, saltos de línea, etc.
+───────────────────────────────────────────────────────────────────────────── */
+function parseCSV(text) {
+  const rows   = [];
+  let   row    = [];
+  let   cell   = '';
+  let   inQ    = false; // dentro de comillas
+
+  for (let i = 0; i < text.length; i++) {
+    const c  = text[i];
+    const cn = text[i + 1]; // siguiente char
+
+    if (inQ) {
+      if (c === '"' && cn === '"') { cell += '"'; i++; }  // comilla escapada ""
+      else if (c === '"')           { inQ = false; }       // cierre de comilla
+      else                          { cell += c; }
+    } else {
+      if      (c === '"')  { inQ = true; }
+      else if (c === ',')  { row.push(cell.trim()); cell = ''; }
+      else if (c === '\n') { row.push(cell.trim()); rows.push(row); row = []; cell = ''; }
+      else if (c === '\r') { /* ignorar \r de Windows */ }
+      else                 { cell += c; }
+    }
+  }
+  if (cell || row.length) { row.push(cell.trim()); rows.push(row); }
+
+  return rows;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILIDAD: Fetch CSV con cabecera y mapeo a array de objetos
+   Usa la primera fila como clave (header row).
+───────────────────────────────────────────────────────────────────────────── */
+async function fetchCSVasObjects(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const text   = await response.text();
+  const rows   = parseCSV(text);
+
+  // Fila 0 = encabezados. Normalizamos a minúsculas y sin espacios.
+  const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
+
+  // Convertir cada fila restante a { header: value }
+  return rows.slice(1).map(row =>
+    Object.fromEntries(headers.map((h, i) => [h, row[i] ?? '']))
+  ).filter(obj => Object.values(obj).some(v => v !== '')); // eliminar filas vacías
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   LOGO — MECANISMO DE 5 CLICS SECRETOS
+───────────────────────────────────────────────────────────────────────────── */
+let clickCount  = 0;
+let clickTimer  = null;
+
+document.getElementById('logo').addEventListener('click', () => {
+  clickCount++;
+
+  // Efecto visual de feedback en cada clic
+  const logo = document.getElementById('logo');
+  logo.classList.remove('pulsed');
+  void logo.offsetWidth; // fuerza reflow para reiniciar animación
+  logo.classList.add('pulsed');
+
+  // Resetear contador si pasan más de 2 s entre clics
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+
+  // Al llegar a 5 clics consecutivos, mostrar modal de login
+  if (clickCount >= 5) {
+    clickCount = 0;
+    clearTimeout(clickTimer);
+    openLoginModal();
+  }
+});
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MODAL DE AUTENTICACIÓN
+───────────────────────────────────────────────────────────────────────────── */
+function openLoginModal() {
+  const modal = document.getElementById('login-modal');
+  modal.classList.remove('hidden-section');
+  setTimeout(() => document.getElementById('login-password').focus(), 50);
+  document.getElementById('login-error').classList.add('hidden');
+  document.getElementById('login-password').value = '';
+}
+
+function closeLoginModal() {
+  document.getElementById('login-modal').classList.add('hidden-section');
+}
+
+async function verifyPassword() {
+  const input     = document.getElementById('login-password').value;
+  const inputHash = await sha256(input);
+
+  // DEBUG: descomenta la siguiente línea si quieres ver el hash generado en consola
+  // console.log('[Auth] hash ingresado:', inputHash);
+
+  if (inputHash === PASSWORD_HASH) {
+    closeLoginModal();
+    enterAdmin();
+  } else {
+    const err = document.getElementById('login-error');
+    err.classList.remove('hidden');
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-password').focus();
+    err.animate([
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(-4px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 300 });
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TRANSICIÓN A ADMIN
+───────────────────────────────────────────────────────────────────────────── */
+function enterAdmin() {
+  document.getElementById('section-index').classList.add('hidden-section');
+  document.getElementById('section-admin').classList.remove('hidden-section');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Cargar datos del dashboard
+  loadLeads();
+  updateStats();
+}
+
+function logout() {
+  document.getElementById('section-admin').classList.add('hidden-section');
+  document.getElementById('section-index').classList.remove('hidden-section');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CARGA Y RENDER DE PROYECTOS (Hoja 1)
+───────────────────────────────────────────────────────────────────────────── */
+async function loadProjects() {
+  const state   = document.getElementById('projects-state');
+  const loading = document.getElementById('projects-loading');
+  const error   = document.getElementById('projects-error');
+  const grid    = document.getElementById('projects-grid');
+
+  state.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  error.classList.add('hidden');
+  grid.innerHTML = '';
+
+  try {
+    // ── Fetch y parseo de CSV ────────────────────────────────────────────────
+    // fetchCSVasObjects devuelve un array de objetos donde cada clave
+    // es el encabezado de columna normalizado a minúsculas.
+    // Columnas esperadas: nombre, url, descripcion, etiquetas, imagen
+    const projects = await fetchCSVasObjects(SHEET_PROJECTS_CSV);
+
+    if (!projects.length) {
+      error.textContent = 'No hay proyectos en la hoja de cálculo todavía.';
+      error.classList.remove('hidden');
+      loading.classList.add('hidden');
+      return;
+    }
+
+    state.classList.add('hidden');
+
+    document.getElementById('project-count').textContent = `${projects.length} proyectos`;
+    document.getElementById('stat-projects').textContent  = projects.length;
+
+    // Renderizar cada proyecto como tarjeta
+    projects.forEach((p, i) => {
+      // p.nombre       → nombre del proyecto
+      // p.url          → enlace al proyecto
+      // p.descripcion  → texto descriptivo
+      // p.etiquetas    → cadena "React, Firebase, Tailwind"
+      // p.imagen       → URL de imagen de portada
+
+      const tags = (p.etiquetas || '')
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean)
+        .map(t => `<span class="tag">${t}</span>`)
+        .join(' ');
+
+      const card = document.createElement('a');
+      card.href    = p.url || '#';
+      card.target  = '_blank';
+      card.rel     = 'noopener noreferrer';
+      card.className = 'project-card block no-underline animate-fade-up';
+      card.style.animationDelay = `${i * 0.07}s`;
+
+      card.innerHTML = `
+        <div class="overflow-hidden" style="height:200px; background:#1A2620;">
+          ${p.imagen
+            ? `<img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-mist text-xs\\'>Sin imagen</div>'" />`
+            : `<div class="w-full h-full flex items-center justify-center">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#243630" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m3 9 4-4 4 4 4-4 4 4"/><path d="M3 15h18"/></svg>
+               </div>`
+          }
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-700 text-snow text-base mb-1 leading-tight">${p.nombre || 'Sin nombre'}</h3>
+          <p class="text-mist text-sm leading-relaxed mb-4">${p.descripcion || ''}</p>
+          <div class="flex flex-wrap gap-1.5">${tags}</div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+  } catch (err) {
+    loading.classList.add('hidden');
+    error.textContent = `Error al cargar proyectos: ${err.message}`;
+    error.classList.remove('hidden');
+    console.error('[Portfolio] Error cargando proyectos:', err);
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CARGA Y RENDER DE LEADS (Hoja 2) — solo en admin
+───────────────────────────────────────────────────────────────────────────── */
+async function loadLeads() {
+  const state   = document.getElementById('leads-state');
+  const wrapper = document.getElementById('leads-wrapper');
+  const errorEl = document.getElementById('leads-error');
+  const tbody   = document.getElementById('leads-tbody');
+
+  state.classList.remove('hidden');
+  wrapper.classList.add('hidden');
+  errorEl.classList.add('hidden');
+  tbody.innerHTML = '';
+
+  try {
+    // ── Fetch y parseo de CSV ────────────────────────────────────────────────
+    // fetchCSVasObjects devuelve objetos con claves: nombre, correo, mensaje, fecha, estado
+    const leads = await fetchCSVasObjects(SHEET_LEADS_CSV);
+
+    state.classList.add('hidden');
+    wrapper.classList.remove('hidden');
+
+    document.getElementById('stat-leads').textContent   = leads.length;
+    const pending = leads.filter(l =>
+      (l.estado || '').toLowerCase().includes('pendiente') || !l.estado
+    ).length;
+    document.getElementById('stat-pending').textContent = pending;
+
+    if (!leads.length) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-mist py-12">No hay leads todavía.</td></tr>`;
+      return;
+    }
+
+    leads.forEach((lead, rowIndex) => {
+      // rowIndex + 2 porque la fila 1 es cabecera en Sheets (indexado desde 1)
+      const sheetRow = rowIndex + 2;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-snow font-500">${lead.nombre || '—'}</td>
+        <td>
+          <a href="mailto:${lead.correo}" class="text-neon hover:underline text-sm">${lead.correo || '—'}</a>
+        </td>
+        <td class="text-mist max-w-xs">
+          <span class="line-clamp-2 block" title="${lead.mensaje || ''}">${lead.mensaje || '—'}</span>
+        </td>
+        <td class="text-mist text-sm whitespace-nowrap">${lead.fecha || '—'}</td>
+        <td>
+          <select
+            class="status-select"
+            data-row="${sheetRow}"
+            onchange="updateLeadStatus(this, ${sheetRow})"
+          >
+            <option value="Pendiente"  ${(lead.estado||'Pendiente')==='Pendiente'   ? 'selected':''}>⏳ Pendiente</option>
+            <option value="Respondido" ${(lead.estado||'')==='Respondido' ? 'selected':''}>💬 Respondido</option>
+            <option value="Listo"      ${(lead.estado||'')==='Listo'      ? 'selected':''}>✅ Listo</option>
+          </select>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    state.classList.add('hidden');
+    errorEl.textContent = `Error al cargar leads: ${err.message}`;
+    errorEl.classList.remove('hidden');
+    console.error('[Admin] Error cargando leads:', err);
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ACTUALIZAR ESTADO DE LEAD
+   Envía el nuevo estado al Apps Script que actualizará la fila en Sheets.
+   La simulación visual es inmediata; la persistencia depende del endpoint.
+───────────────────────────────────────────────────────────────────────────── */
+async function updateLeadStatus(selectEl, sheetRow) {
+  const newStatus = selectEl.value;
+
+  // Feedback visual inmediato
+  selectEl.style.borderColor = '#1F8B5C';
+  setTimeout(() => { selectEl.style.borderColor = ''; }, 1500);
+
+  showToast(`Estado actualizado: ${newStatus}`);
+
+  // ── CONECTAR AL BACKEND ─────────────────────────────────────────────────
+  try {
+    await fetch(APPS_SCRIPT_URL_STATUS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'estado', row: sheetRow, estado: newStatus })
+    });
+  } catch (err) {
+    console.error('[Admin] Error actualizando estado:', err);
+    showToast('Error al guardar el estado. Reintenta.');
+  }
+
+  // Actualizar contador de pendientes en stats
+  updateStats();
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORMULARIO DE CONTACTO PÚBLICO
+───────────────────────────────────────────────────────────────────────────── */
+async function submitContact() {
+  const nombre   = document.getElementById('contact-name').value.trim();
+  const correo   = document.getElementById('contact-email').value.trim();
+  const mensaje  = document.getElementById('contact-message').value.trim();
+  const feedback = document.getElementById('contact-feedback');
+
+  if (!nombre || !correo || !mensaje) {
+    feedback.textContent = '⚠ Por favor, completa todos los campos.';
+    feedback.className   = 'mt-4 text-sm text-yellow-400';
+    feedback.classList.remove('hidden');
+    return;
+  }
+
+  feedback.textContent = 'Enviando…';
+  feedback.className   = 'mt-4 text-sm text-mist';
+  feedback.classList.remove('hidden');
+
+  // ── CONECTAR AL BACKEND ─────────────────────────────────────────────────
+  try {
+    const res = await fetch(APPS_SCRIPT_URL_CONTACT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'contacto',
+        nombre,
+        correo,
+        mensaje
+      })
+    });
+    if (!res.ok) throw new Error('Error del servidor');
+
+    feedback.textContent = '✓ Mensaje enviado. Te contactamos pronto.';
+    feedback.className   = 'mt-4 text-sm text-green-400';
+    document.getElementById('contact-name').value    = '';
+    document.getElementById('contact-email').value   = '';
+    document.getElementById('contact-message').value = '';
+
+  } catch (err) {
+    feedback.textContent = 'Error al enviar. Inténtalo de nuevo.';
+    feedback.className   = 'mt-4 text-sm text-red-400';
+    console.error('[Contacto] Error:', err);
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FORMULARIO DE NUEVO PROYECTO (ADMIN)
+───────────────────────────────────────────────────────────────────────────── */
+function toggleAddForm() {
+  const form = document.getElementById('add-project-form');
+  const btn  = document.getElementById('add-toggle-btn');
+  if (form.classList.contains('hidden')) {
+    form.classList.remove('hidden');
+    btn.textContent = '✕ Cancelar';
+  } else {
+    form.classList.add('hidden');
+    btn.textContent = '+ Nuevo proyecto';
+  }
+}
+
+async function submitNewProject() {
+  const nombre = document.getElementById('new-name').value.trim();
+  const url    = document.getElementById('new-url').value.trim();
+  const desc   = document.getElementById('new-desc').value.trim();
+  const tags   = document.getElementById('new-tags').value.trim();
+  const imagen = document.getElementById('new-image').value.trim();
+
+  if (!nombre || !url) {
+    showToast('Nombre y URL son obligatorios.');
+    return;
+  }
+
+  showToast('Guardando proyecto…');
+
+  // ── CONECTAR AL BACKEND ─────────────────────────────────────────────────
+  try {
+    const res = await fetch(APPS_SCRIPT_URL_PROJECTS, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'proyecto',
+        nombre,
+        url,
+        descripcion: desc,
+        etiquetas: tags,
+        imagen
+      })
+    });
+    if (!res.ok) throw new Error('Error del servidor');
+
+    showToast('✓ Proyecto agregado exitosamente.');
+    document.getElementById('new-name').value  = '';
+    document.getElementById('new-url').value   = '';
+    document.getElementById('new-desc').value  = '';
+    document.getElementById('new-tags').value  = '';
+    document.getElementById('new-image').value = '';
+    toggleAddForm();
+    // Recargar proyectos para reflejar el cambio en el portafolio público
+    loadProjects();
+  } catch (err) {
+    showToast('Error al guardar. Revisa la consola.');
+    console.error('[Proyecto] Error:', err);
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   STATS DEL DASHBOARD
+───────────────────────────────────────────────────────────────────────────── */
+function updateStats() {
+  // Recontamos los selects de estado que están en la tabla
+  const selects = document.querySelectorAll('.status-select');
+  const pending = Array.from(selects).filter(s => s.value === 'Pendiente').length;
+  document.getElementById('stat-pending').textContent = pending;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TOAST (notificación)
+───────────────────────────────────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   INIT — ejecutar cuando el DOM esté listo
+───────────────────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Cerrar modal al hacer clic en el overlay oscuro (fuera del cuadro blanco)
+  document.getElementById('login-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeLoginModal();
+  });
+
+  // Cargar proyectos del portafolio público
+  document.getElementById('projects-state').classList.remove('hidden');
+  loadProjects();
+});
+</script>
+</body>
+</html>
