@@ -529,15 +529,15 @@ const SHEET_LEADS_CSV =
 // ──────────────────────────────────────────────────────────────────────────────
 // ENDPOINT 1 — Recibe formulario de contacto y escribe en Hoja 2
 // Reemplaza con la URL real de tu Web App publicada.
-const APPS_SCRIPT_URL_CONTACT = 'https://script.google.com/macros/s/AKfycbzftO5wpOsjOBavbHAjIK001nLhBRSKHbqpdhsFZEE_I5c3KzwgtdtfiKgpHmbVvKrM2Q/exec';
+const APPS_SCRIPT_URL_CONTACT = 'https://script.google.com/macros/s/AKfycbylTwIfKWndSvYMW8An72AHLDGWjzwSvKpIAJH3HmUvY2vtuFRRR5glZx-d1_vN59Bjlw/exec';
 
 // ENDPOINT 2 — Recibe datos de nuevo proyecto y escribe en Hoja 1
 // Reemplaza con la URL real de tu Web App publicada.
-const APPS_SCRIPT_URL_PROJECTS = 'https://script.google.com/macros/s/AKfycbzftO5wpOsjOBavbHAjIK001nLhBRSKHbqpdhsFZEE_I5c3KzwgtdtfiKgpHmbVvKrM2Q/exec';
+const APPS_SCRIPT_URL_PROJECTS = 'https://script.google.com/macros/s/AKfycbylTwIfKWndSvYMW8An72AHLDGWjzwSvKpIAJH3HmUvY2vtuFRRR5glZx-d1_vN59Bjlw/exec';
 
 // ENDPOINT 3 — Actualiza estado de un lead por número de fila
 // Reemplaza con la URL real de tu Web App publicada.
-const APPS_SCRIPT_URL_STATUS = 'https://script.google.com/macros/s/AKfycbzftO5wpOsjOBavbHAjIK001nLhBRSKHbqpdhsFZEE_I5c3KzwgtdtfiKgpHmbVvKrM2Q/exec';
+const APPS_SCRIPT_URL_STATUS = 'https://script.google.com/macros/s/AKfycbylTwIfKWndSvYMW8An72AHLDGWjzwSvKpIAJH3HmUvY2vtuFRRR5glZx-d1_vN59Bjlw/exec';
 
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -870,19 +870,16 @@ async function updateLeadStatus(selectEl, sheetRow) {
   showToast(`Estado actualizado: ${newStatus}`);
 
   // ── CONECTAR AL BACKEND ─────────────────────────────────────────────────
-  // Descomenta y configura APPS_SCRIPT_URL_STATUS para persistir el cambio.
-  /*
   try {
     await fetch(APPS_SCRIPT_URL_STATUS, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ row: sheetRow, estado: newStatus })
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'estado', row: sheetRow, estado: newStatus })
     });
   } catch (err) {
     console.error('[Admin] Error actualizando estado:', err);
     showToast('Error al guardar el estado. Reintenta.');
   }
-  */
 
   // Actualizar contador de pendientes en stats
   updateStats();
@@ -910,18 +907,15 @@ async function submitContact() {
   feedback.classList.remove('hidden');
 
   // ── CONECTAR AL BACKEND ─────────────────────────────────────────────────
-  // Reemplaza APPS_SCRIPT_URL_CONTACT con tu Web App URL para guardar en Hoja 2.
-  /*
   try {
     const res = await fetch(APPS_SCRIPT_URL_CONTACT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
+        action: 'contacto',
         nombre,
         correo,
-        mensaje,
-        fecha: new Date().toLocaleDateString('es-MX'),
-        estado: 'Pendiente'
+        mensaje
       })
     });
     if (!res.ok) throw new Error('Error del servidor');
@@ -935,17 +929,8 @@ async function submitContact() {
   } catch (err) {
     feedback.textContent = 'Error al enviar. Inténtalo de nuevo.';
     feedback.className   = 'mt-4 text-sm text-red-400';
+    console.error('[Contacto] Error:', err);
   }
-  */
-
-  // DEMO sin backend (elimina esto cuando conectes el Apps Script real)
-  setTimeout(() => {
-    feedback.textContent = '✓ Mensaje enviado correctamente. (Demo — conecta el Apps Script para guardar en Sheets)';
-    feedback.className   = 'mt-4 text-sm text-green-400';
-    document.getElementById('contact-name').value    = '';
-    document.getElementById('contact-email').value   = '';
-    document.getElementById('contact-message').value = '';
-  }, 800);
 }
 
 
@@ -979,29 +964,34 @@ async function submitNewProject() {
   showToast('Guardando proyecto…');
 
   // ── CONECTAR AL BACKEND ─────────────────────────────────────────────────
-  // Descomenta para guardar en Google Sheets Hoja 1 via Apps Script.
-  /*
   try {
-    await fetch(APPS_SCRIPT_URL_PROJECTS, {
+    const res = await fetch(APPS_SCRIPT_URL_PROJECTS, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre, url, descripcion: desc, etiquetas: tags, imagen })
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'proyecto',
+        nombre,
+        url,
+        descripcion: desc,
+        etiquetas: tags,
+        imagen
+      })
     });
+    if (!res.ok) throw new Error('Error del servidor');
+
     showToast('✓ Proyecto agregado exitosamente.');
+    document.getElementById('new-name').value  = '';
+    document.getElementById('new-url').value   = '';
+    document.getElementById('new-desc').value  = '';
+    document.getElementById('new-tags').value  = '';
+    document.getElementById('new-image').value = '';
     toggleAddForm();
-    // Recargar proyectos si queremos actualizar la vista pública
+    // Recargar proyectos para reflejar el cambio en el portafolio público
     loadProjects();
   } catch (err) {
     showToast('Error al guardar. Revisa la consola.');
-    console.error(err);
+    console.error('[Proyecto] Error:', err);
   }
-  */
-
-  // DEMO
-  setTimeout(() => {
-    showToast('✓ Proyecto listo. (Demo — conecta el Apps Script para guardar en Sheets)');
-    toggleAddForm();
-  }, 600);
 }
 
 
